@@ -1,4 +1,4 @@
 yarn-monitoring
 ===============
 
-Hadoop YARN monitoring with R
+Repisitory to monitor Hadoop YARN with R and generate metrics/charts.
