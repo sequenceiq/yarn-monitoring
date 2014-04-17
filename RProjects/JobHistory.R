@@ -193,4 +193,37 @@ transposeListOfLists <- function(listoflist)
 	}	
 	result
 }
-
+createTimeBoxData <- function(job, relative=FALSE)
+{
+  result<-list()
+  attemptindices<-match(job$tasks$successfulAttempt,job$attempts$id)
+  mapindices<-which(job$attempts$type[attemptindices]=="MAP")
+  reduceindices<-which(job$attempts$type[attemptindices]=="REDUCE")
+  if (relative)
+ 	 minstart<-min(job$attempts$startTime)
+  else
+	minstart<-0
+  //print(minstart)
+  for(i in 1:length(mapindices))
+  {
+  	node<-job$attempts$nodeHttpAddress[mapindices[i]]  
+	if (is.null(result[[node]]))
+		result[[node]]<-matrix(c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0), nrow=1, ncol=4)
+      else
+		result[[node]]<-rbind(result[[node]],c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0))
+  }
+  for(i in 1:length(reduceindices))
+  {
+  	node<-job$attempts$nodeHttpAddress[reduceindices[i]]  
+	if (is.null(result[[node]]))
+		result[[node]]<-matrix(c(job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart), nrow=1, ncol=4)
+      else
+		result[[node]]<-rbind(result[[node]],c(job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart))
+  }
+  for(i in 1:length(result))
+  {
+	result[[i]]<=result[[i]][sort.list(result[[i]][,1]), ]
+  }
+  result<-result[order(names(result))]
+  result
+}
