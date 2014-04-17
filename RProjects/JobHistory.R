@@ -203,7 +203,7 @@ createTimeBoxData <- function(job, relative=FALSE)
  	 minstart<-min(job$attempts$startTime)
   else
 	minstart<-0
-  //print(minstart)
+  #print(minstart)
   for(i in 1:length(mapindices))
   {
   	node<-job$attempts$nodeHttpAddress[mapindices[i]]  
