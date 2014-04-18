@@ -9,8 +9,6 @@ getJob <- function(jobId, historyServer)
 	job <- list()
 	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId, sep="")
 	job$job <- fromJSON(getURL(url,httpheader = c(Accept="application/json")))$job
-	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/counters", sep="")
-	job$counters <- fromJSON(getURL(url,httpheader = c(Accept="application/json")))$jobCounters
 	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
 	job$tasks <- transposeListOfLists(fromJSON(getURL(url,httpheader = c(Accept="application/json")))$tasks$task)
 	attempts<-list()
@@ -26,6 +24,12 @@ getJob <- function(jobId, historyServer)
 	#print(attempts)
 	job$attempts<-transposeListOfLists(attempts)
 	job
+}
+getJobCounter <- function(jobId, historyServer)
+{
+	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/counters", sep="")
+	counters <- fromJSON(getURL(url,httpheader = c(Accept="application/json")))$jobCounters
+	names(counters)
 }
 
 # This function plots lines for each mapper horizontally. The horizontal axis is the time in ms
@@ -222,7 +226,7 @@ createTimeBoxData <- function(job, relative=FALSE)
   }
   for(i in 1:length(result))
   {
-	result[[i]]<=result[[i]][sort.list(result[[i]][,1]), ]
+	result[[i]]<-result[[i]][sort.list(result[[i]][,1]), ]
   }
   result<-result[order(names(result))]
   result

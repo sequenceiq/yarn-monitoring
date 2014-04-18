@@ -1,4 +1,4 @@
-plotTimeBoxes<-function(data, nodeNum=21, slotsPerNode=4)
+plotTimeBoxes<-function(data, nodeNum=21, slotsPerNode=4, ylim=c(0,nodeNum+0.5))
 {
 	minx=.Machine$double.xmax
 	maxx=0
@@ -11,7 +11,7 @@ plotTimeBoxes<-function(data, nodeNum=21, slotsPerNode=4)
 		if (maxx < ma )
 			maxx <- ma		
 	}
-	plot(1, type="n", xlim=c(minx-0.5,maxx+0.5),ylim=c(0,nodeNum+0.5),  xlab="time (ms)",ylab="nodes")
+	plot(1, type="n", xlim=c(minx-0.5,maxx+0.5),ylim=ylim,  xlab="time (ms)",ylab="nodes")
 	for(i in 1:nodeNum)
 	{
 		lines(c(minx-0.5,maxx+0.5),c(i,i))	
