@@ -1,5 +1,6 @@
 library("rjson")
 library("RCurl")
+source("TimeBoxes.R")
 
 # It returns all the data of a job with specified jobId and specified history server
 # The historyServer is in format "hostname:port"
@@ -14,22 +15,39 @@ getJob <- function(jobId, historyServer)
 	attempts<-list()
 	for(i in 1:length(job$tasks$successfulAttempt))
 	{
-	#	print(job$tasks$successfulAttempt[i])
-	#	job$tasks[[i]]<-tasks[[i]]
 		attempt<-job$tasks$successfulAttempt[i]
 		url<-paste("http://node02.gusgus.linux:19888/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",job$tasks$id[i], "/attempts/",attempt,sep="")
 		attempts[[i]]<-fromJSON(getURL(url,httpheader = c(Accept="application/json")))$taskAttempt
-		#job$attempts <- c(job$attempt,transposeListOfLists(fromJSON(getURL(url,httpheader = c(Accept="application/json")))$taskAttempt))
 	}
-	#print(attempts)
 	job$attempts<-transposeListOfLists(attempts)
+	class(job)<-"mrjob"
 	job
 }
-getJobCounter <- function(jobId, historyServer)
+getTaskCounters <- function(jobId, historyServer)
 {
-	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/counters", sep="")
-	counters <- fromJSON(getURL(url,httpheader = c(Accept="application/json")))$jobCounters
-	names(counters)
+	result<-list()
+	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
+	tasks <- transposeListOfLists(fromJSON(getURL(url,httpheader = c(Accept="application/json")))$tasks$task)
+	for(i in 1:length(tasks$successfulAttempt))
+	{
+		attempt<-tasks$successfulAttempt[i]
+		url<-paste("http://node02.gusgus.linux:19888/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",tasks$id[i], "/attempts/",attempt,"/counters",sep="")
+		counter<-fromJSON(getURL(url,httpheader = c(Accept="application/json")))$jobTaskAttemptCounters$taskAttemptCounterGroup
+		for( j in 1:length(counter))
+		{
+			groups<-counter[[j]]
+			for(g in 1:length(groups$counter))
+			{
+				key<-paste(tail(strsplit(groups$counterGroupName,"\\.")[[1]],n=1),groups$counter[[g]]$name,sep=".");
+				value<-groups$counter[[g]]$value
+				if (is.null(result[[key]]))
+					result[[key]]<-c(value)
+				else
+					result[[key]]<-c(result[[key]],value)
+			}
+		}
+	}
+	result
 }
 
 # This function plots lines for each mapper horizontally. The horizontal axis is the time in ms
@@ -39,7 +57,7 @@ plotMapTasksTimes <- function(job)
 	plotTasksTimes(job, indices)
 }
 
-# This function plots lines for each reducer horizontally. The horizontal axis is the time in ms
+# This function plots lines for each red+ucer horizontally. The horizontal axis is the time in ms
 plotReduceTasksTimes <- function(job)
 {
 	indices<-which(job$tasks$type=="REDUCE")
@@ -47,7 +65,7 @@ plotReduceTasksTimes <- function(job)
 }
 
 # This function plots lines for each mapper and reducer horizontally. The horizontal axis is the time in ms
-plotTasksTimes <- function(job, indices=1:length(job$tasks$startTime))
+plotTasksTimesdata <- function(job, indices=1:length(job$tasks$startTime))
 {
 	times<-cbind(job$tasks$startTime[indices],job$tasks$finishTime[indices])
 	sortedtimes<-times[order(times[,1]),]
@@ -62,14 +80,14 @@ plotTasksTimes <- function(job, indices=1:length(job$tasks$startTime))
 }
 
 # This function plots the number of active mappers at every time point when this number changes
-plotActiveMappersNum <- function(job, replot=FALSE, minTime=NULL)
+plotActiveMappersNumdata <- function(job, replot=FALSE, minTime=NULL)
 {
 	nums <- getActiveTasksNum(job, which(job$tasks$type=="MAP", minTime))
 	plotActiveTasksNum(nums, replot=replot)
 }
 
 # This function plots the number of active reducers at every time point when this number changes
-plotActiveReducersNum <- function(job, replot=FALSE, minTime=NULL)
+plotActiveReducersNumdata <- function(job, replot=FALSE, minTime=NULL)
 {
 	nums <- getActiveTasksNum(job, which(job$tasks$type=="REDUCE"), minTime)
 	plotActiveTasksNum(nums, replot=replot)
@@ -77,7 +95,7 @@ plotActiveReducersNum <- function(job, replot=FALSE, minTime=NULL)
 }
 
 # This function return the number of active tasks (mappers or reducers depend on indices) at every time point when this number changes
-getActiveTasksNum <- function(job, indices=1:length(job$tasks$startTime), minTime=NULL)
+getActiveTasksNumdata <- function(job, indices=1:length(job$tasks$startTime), minTime=NULL)
 {
 	times<-rbind(cbind(job$tasks$startTime[indices],rep(1,length(indices))),
  		cbind(job$tasks$finishTime[indices],rep(-1,length(indices))))
@@ -86,7 +104,7 @@ getActiveTasksNum <- function(job, indices=1:length(job$tasks$startTime), minTim
 }
 
 # This function return the number of active reducers in shuffle at every time point when this number changes
-getActiveShufflePhaseReducerNum <- function(job, minTime=NULL)
+getActiveShufflePhaseReducerNumdata <- function(job, minTime=NULL)
 {
 	indices<-which(job$tasks$type=="REDUCE")
 	times<-rbind(cbind(job$tasks$startTime[indices],rep(1,length(indices))),
@@ -95,7 +113,7 @@ getActiveShufflePhaseReducerNum <- function(job, minTime=NULL)
 	nums
 }
 # This function return the number of active reducers in merge at every time point when this number changes
-getActiveMergePhaseReducerNum <- function(job, minTime=NULL)
+getActiveMergePhaseReducerNumdata <- function(job, minTime=NULL)
 {
 	times<-rbind(cbind(job$attempts$shuffleFinishTime,rep(1,length(job$attempts$shuffleFinishTime))),
  		cbind(job$attempts$mergeFinishTime,rep(-1,length(job$attempts$mergeFinishTime))))
@@ -103,7 +121,7 @@ getActiveMergePhaseReducerNum <- function(job, minTime=NULL)
 	nums
 }
 # This function return the number of active reducers in merge at every time point when this number changes
-getActiveReducePhaseReducerNum <- function(job, minTime=NULL)
+getActiveReducePhaseReducerNumdata <- function(job, minTime=NULL)
 {
 	indices<-which(job$tasks$type=="REDUCE")
 	times<-rbind(cbind(job$attempts$mergeFinishTime,rep(1,length(job$attempts$mergeFinishTime))),
@@ -113,7 +131,7 @@ getActiveReducePhaseReducerNum <- function(job, minTime=NULL)
 }
 # This function plot the number of active tasks (mappers or reducers as two graphs, reducers with phases) 
 # at every time point when this number changes
-plotActiveMRTasksNum <- function(job, relative=TRUE)
+plotActiveMRTasksNumdata <- function(job, relative=TRUE)
 {
 	if (relative)
 	{
@@ -137,7 +155,7 @@ plotActiveMRTasksNum <- function(job, relative=TRUE)
 }
 
 # This function plot the number of active reducers in different phases (shuffle, merge, reduce)at every time point when this number changes
-plotActiveReduceTasksNumDetailed <- function(job, relative=TRUE)
+plotActiveReduceTasksNumDetaileddata <- function(job, relative=TRUE)
 {
 	if (relative)
 	{
@@ -197,9 +215,13 @@ transposeListOfLists <- function(listoflist)
 	}	
 	result
 }
-createTimeBoxData <- function(job, relative=FALSE)
+getnum<-function(names)
 {
-  result<-list()
+	substr(names, 5, 6)
+}
+createTimeBoxDatadata <- function(job, relative=FALSE)
+{
+  result<-timeboxes()
   attemptindices<-match(job$tasks$successfulAttempt,job$attempts$id)
   mapindices<-which(job$attempts$type[attemptindices]=="MAP")
   reduceindices<-which(job$attempts$type[attemptindices]=="REDUCE")
@@ -207,27 +229,15 @@ createTimeBoxData <- function(job, relative=FALSE)
  	 minstart<-min(job$attempts$startTime)
   else
 	minstart<-0
-  #print(minstart)
   for(i in 1:length(mapindices))
   {
   	node<-job$attempts$nodeHttpAddress[mapindices[i]]  
-	if (is.null(result[[node]]))
-		result[[node]]<-matrix(c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0), nrow=1, ncol=4)
-      else
-		result[[node]]<-rbind(result[[node]],c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0))
+	result<-addBox.timeboxes(result, node, c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0,0))
   }
   for(i in 1:length(reduceindices))
   {
   	node<-job$attempts$nodeHttpAddress[reduceindices[i]]  
-	if (is.null(result[[node]]))
-		result[[node]]<-matrix(c(job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart), nrow=1, ncol=4)
-      else
-		result[[node]]<-rbind(result[[node]],c(job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart))
+	result<-addBox.timeboxes(result, node, c(0, job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart))
   }
-  for(i in 1:length(result))
-  {
-	result[[i]]<-result[[i]][sort.list(result[[i]][,1]), ]
-  }
-  result<-result[order(names(result))]
   result
 }
