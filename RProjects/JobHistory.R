@@ -219,7 +219,7 @@ getnum<-function(names)
 {
 	substr(names, 5, 6)
 }
-createTimeBoxDatadata <- function(job, relative=FALSE)
+createTimeBoxData <- function(job, relative=FALSE)
 {
   result<-timeboxes()
   attemptindices<-match(job$tasks$successfulAttempt,job$attempts$id)
