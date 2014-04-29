@@ -86,6 +86,94 @@ plotElapsedMapTimes<-function(mrruns)
 	}
 }
 
+plotInputRecordsProcessedPerSec<-function(mrruns)
+{
+  for( i in 1:length(mrruns))
+  {
+    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
+    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
+    bytespersec<-mrruns[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrruns[[i]]$job$attempts[mapindices]$elapsedTime
+    if (i==1)
+      plot(bytespersec, type="l")
+    else
+      lines(bytespersec, col=i)
+  }
+}
+
+plotMeanInputBytesPerSecByNode<-function(mrruns, minmax=TRUE)
+{
+  result<-list()
+  for( i in 1:length(mrruns))
+  {
+    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
+    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
+    for( m in 1:length(mapindices))
+    {
+      node<-mrruns[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
+      bytespersec<-1000*mrruns[[i]]$counters$FileInputFormatCounter.BYTES_READ[mapindices[m]]/(mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]]*1024*1024)
+      if ( is.null(result[[node]]))
+        result[[node]]<-bytespersec
+      else
+        result[[node]]<-c(result[[node]],bytespersec)
+    }
+  }
+  means<-vector()
+  mins<-vector()
+  maxs<-vector()
+  sds<-vector()
+  res<-result[sort(names(result))]
+
+  for( n in 1:length(res))
+  {
+    means<-c(means, mean(res[[n]]))
+    mins<-c(mins, min(res[[n]]))
+    maxs<-c(maxs, max(res[[n]]))
+    sds<-c(sds,sd(res[[n]]))
+  }
+  if ( minmax)
+    errbar(names(res),means, maxs, mins, ylab="ms", xlab="nodes", main="Mean, min, max elapsed times per node")
+  else
+    errbar(names(res),means, means+sds, means-sds, ylab="mbytes", xlab="nodes", main="Mean +- stdev elapsed times per node")
+  res
+}
+
+plotMeanInputRecordsPerSecByNode<-function(mrruns, minmax=TRUE)
+{
+  result<-list()
+  for( i in 1:length(mrruns))
+  {
+    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
+    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
+    for( m in 1:length(mapindices))
+    {
+      node<-mrruns[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
+      recordspersec<-1000*mrruns[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS[mapindices[m]]/(mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]])
+      if ( is.null(result[[node]]))
+        result[[node]]<-recordspersec
+      else
+        result[[node]]<-c(result[[node]],recordspersec)
+    }
+  }
+  means<-vector()
+  mins<-vector()
+  maxs<-vector()
+  sds<-vector()
+  res<-result[sort(names(result))]
+  
+  for( n in 1:length(res))
+  {
+    means<-c(means, mean(res[[n]]))
+    mins<-c(mins, min(res[[n]]))
+    maxs<-c(maxs, max(res[[n]]))
+    sds<-c(sds,sd(res[[n]]))
+  }
+  if ( minmax)
+    errbar(names(res),means, maxs, mins, ylab="ms", xlab="nodes", main="Mean, min, max elapsed times per node")
+  else
+    errbar(names(res),means, means+sds, means-sds, ylab="records", xlab="nodes", main="Mean +- stdev elapsed times per node")
+  res
+}
+
 plotMeanElapsedMapTimesByNode<-function(mrruns, taskType="MAP", minmax=TRUE)
 {
 	result<-list()
