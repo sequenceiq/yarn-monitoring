@@ -1,6 +1,6 @@
 library("rjson")
 library("RCurl")
-source("TimeBoxes.R")
+source("RProjects/TimeBoxes.R")
 
 # It returns all the data of a job with specified jobId and specified history server
 # The historyServer is in format "hostname:port"
