@@ -80,7 +80,7 @@ plotElapsedMapTimes<-function(mrruns)
 	for( i in 1:length(mrruns))
 	{
 		if (i==1)
-			plot(mrruns[[i]]$job$tasks$elapsedTime, type="l")
+			plot(mrruns[[i]]$job$tasks$elapsedTime, type="l", xlab="tasks", ylab="elapsedTime")
 		else
 			lines(mrruns[[i]]$job$tasks$elapsedTime, col=i)
 	}
@@ -131,7 +131,7 @@ plotMeanInputBytesPerSecByNode<-function(mrruns, minmax=TRUE)
     sds<-c(sds,sd(res[[n]]))
   }
   if ( minmax)
-    errbar(names(res),means, maxs, mins, ylab="ms", xlab="nodes", main="Mean, min, max elapsed times per node")
+    errbar(names(res),means, maxs, mins, ylab="mbytes", xlab="nodes", main="Mean, min, max elapsed times per node")
   else
     errbar(names(res),means, means+sds, means-sds, ylab="mbytes", xlab="nodes", main="Mean +- stdev elapsed times per node")
   res
@@ -168,7 +168,7 @@ plotMeanInputRecordsPerSecByNode<-function(mrruns, minmax=TRUE)
     sds<-c(sds,sd(res[[n]]))
   }
   if ( minmax)
-    errbar(names(res),means, maxs, mins, ylab="ms", xlab="nodes", main="Mean, min, max elapsed times per node")
+    errbar(names(res),means, maxs, mins, ylab="records", xlab="nodes", main="Mean, min, max elapsed times per node")
   else
     errbar(names(res),means, means+sds, means-sds, ylab="records", xlab="nodes", main="Mean +- stdev elapsed times per node")
   res
