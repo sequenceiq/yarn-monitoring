@@ -8,15 +8,15 @@ source("RProjects/TimeBoxes.R")
 getJob <- function(jobId, historyServer)
 {
 	job <- list()
-	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId, sep="")
+	url<-paste(historyServer,"/ws/v1/history/mapreduce/jobs/",jobId, sep="")
 	job$job <- fromJSON(getURL(url,httpheader = c(Accept="application/json")))$job
-	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
+	url<-paste(historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
 	job$tasks <- transposeListOfLists(fromJSON(getURL(url,httpheader = c(Accept="application/json")))$tasks$task)
 	attempts<-list()
 	for(i in 1:length(job$tasks$successfulAttempt))
 	{
 		attempt<-job$tasks$successfulAttempt[i]
-		url<-paste("http://node02.gusgus.linux:19888/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",job$tasks$id[i], "/attempts/",attempt,sep="")
+		url<-paste(historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",job$tasks$id[i], "/attempts/",attempt,sep="")
 		attempts[[i]]<-fromJSON(getURL(url,httpheader = c(Accept="application/json")))$taskAttempt
 	}
 	job$attempts<-transposeListOfLists(attempts)
@@ -26,12 +26,12 @@ getJob <- function(jobId, historyServer)
 getTaskCounters <- function(jobId, historyServer)
 {
 	result<-list()
-	url<-paste("http://",historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
+	url<-paste(historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks", sep="")
 	tasks <- transposeListOfLists(fromJSON(getURL(url,httpheader = c(Accept="application/json")))$tasks$task)
 	for(i in 1:length(tasks$successfulAttempt))
 	{
 		attempt<-tasks$successfulAttempt[i]
-		url<-paste("http://node02.gusgus.linux:19888/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",tasks$id[i], "/attempts/",attempt,"/counters",sep="")
+		url<-paste(historyServer,"/ws/v1/history/mapreduce/jobs/",jobId,"/tasks/",tasks$id[i], "/attempts/",attempt,"/counters",sep="")
 		counter<-fromJSON(getURL(url,httpheader = c(Accept="application/json")))$jobTaskAttemptCounters$taskAttemptCounterGroup
 		for( j in 1:length(counter))
 		{

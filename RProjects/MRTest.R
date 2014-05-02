@@ -1,98 +1,96 @@
 source("RProjects/JobHistory.R")
 library("rjson")
 library("Hmisc")
-mrrun<-function(name, jobId, fromFile=FALSE)
+
+mrrun<-function(name, jobURL=NULL, dir=".", save=FALSE)
 {
-	if ( fromFile)
+	if ( is.null(jobURL) )
 	{
-		run<-fromJSON(readLines(paste(jobId,".RData",sep="")))
+		run<-fromJSON(readLines(paste(dir,"/",name,".RData",sep="")))
 	}
 	else
 	{
 		run<-list(name=name)
 		class(run)<-"mrrun"
-		job<-getJob(jobId, "node02.gusgus.linux:19888")
-		counters<-getTaskCounters(jobId, "node02.gusgus.linux:19888")
+    urlVector<-strsplit(jobURL,"/")[[1]]
+    historyServerUrl<-paste(urlVector[1:(length(urlVector)-1)],collapse="/")    
+		jobId<-urlVector[length(urlVector)]
+		job<-getJob(jobId, historyServerUrl)
+		counters<-getTaskCounters(jobId, historyServerUrl)
 		run$job<-job
 		run$counters<-counters
+    if ( save )
+		  writeLines(toJSON(run), paste(dir,"/",name,".RData",sep=""))
 	}
 	run
 }
 
-saveRun<-function(run)
-{
-	writeLines(toJSON(run), paste(run$name,".RData",sep=""))
-}
-
-mrruns<-function(runNames=NULL)
+mrtest<-function(runNames=NULL, dir=".")
 {
 	result<-list()
-	class(result)<-"mrruns"
-	if (runVector != NULL )
+	class(result)<-"mrtest"
+	for(i in 1:length(runNames))
 	{
-		for(i in 1:length(runNames))
-		{
-			run<-mrrun(runNames[i],fromFile=TRUE)
-			result[[run$name]]<-run
-		}
+		run<-mrrun(runNames[i], dir=dir)
+		result[[run$name]]<-run
 	}
 	result
 }
 
-addRun<-function(mrruns, run)
+addRun<-function(mrtest, mrrun)
 {
-	mrruns[[run$name]]<-run
-	saveRun(run)
-	mrruns
+  mrtest[[mrrun$name]]<-mrrun
+  mrtest
 }
-plotInputBytesRead<-function(mrruns)
+
+plotInputBytesRead<-function(mrtest)
 {
 	res<-vector()
-	for(i in 1:length(mrruns))
+	for(i in 1:length(mrtest))
 	{
-		res<-c(res, mean(mrruns[[i]]$counters$FileInputFormatCounter.BYTES_READ))
+		res<-c(res, mean(mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ)/(1024*1024))
 	}
-	plot(res,type="l")
+	plot(res,type="l", xlab="run",ylab="mbytes")
 	res
 }
 
-plotElapsedMapTimesStat<-function(mrruns)
+plotElapsedMapTimesStat<-function(mrtest)
 {
 	means<-vector()
 	mins<-vector()
 	maxs<-vector()
 	sds<-vector()
-	for( i in 1:length(mrruns))
+	for( i in 1:length(mrtest))
 	{
-		means<-c(means,mean(mrruns[[i]]$job$tasks$elapsedTime))
-		mins<-c(mins,min(mrruns[[i]]$job$tasks$elapsedTime))
-		maxs<-c(maxs,max(mrruns[[i]]$job$tasks$elapsedTime))
-		sds<-c(sds,sd(mrruns[[i]]$job$tasks$elapsedTime))
+		means<-c(means,mean(mrtest[[i]]$job$tasks$elapsedTime))
+		mins<-c(mins,min(mrtest[[i]]$job$tasks$elapsedTime))
+		maxs<-c(maxs,max(mrtest[[i]]$job$tasks$elapsedTime))
+		sds<-c(sds,sd(mrtest[[i]]$job$tasks$elapsedTime))
 	}	
 #	par(fg="black")
-	errbar(1:length(mrruns),means, maxs, mins, errbar.col="red", ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")		
+	errbar(1:length(mrtest),means, maxs, mins, errbar.col="red", ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")		
  # par(fg="red")
-	errbar(1:length(mrruns),means, means+sds, means-sds , lwd=2, add=TRUE, ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")
+	errbar(1:length(mrtest),means, means+sds, means-sds , lwd=2, add=TRUE, ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")
 	#par(fg="black")
 }
-plotElapsedMapTimes<-function(mrruns)
+plotElapsedMapTimes<-function(mrtest)
 {
-	for( i in 1:length(mrruns))
+	for( i in 1:length(mrtest))
 	{
 		if (i==1)
-			plot(mrruns[[i]]$job$tasks$elapsedTime, type="l", xlab="tasks", ylab="elapsedTime")
+			plot(mrtest[[i]]$job$tasks$elapsedTime, type="l", xlab="tasks", ylab="elapsedTime")
 		else
-			lines(mrruns[[i]]$job$tasks$elapsedTime, col=i)
+			lines(mrtest[[i]]$job$tasks$elapsedTime, col=i)
 	}
 }
 
-plotInputRecordsProcessedPerSec<-function(mrruns)
+plotInputRecordsProcessedPerSec<-function(mrtest)
 {
-  for( i in 1:length(mrruns))
+  for( i in 1:length(mrtest))
   {
-    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
-    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
-    bytespersec<-mrruns[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrruns[[i]]$job$attempts[mapindices]$elapsedTime
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    bytespersec<-mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrtest[[i]]$job$attempts[mapindices]$elapsedTime
     if (i==1)
       plot(bytespersec, type="l")
     else
@@ -100,17 +98,17 @@ plotInputRecordsProcessedPerSec<-function(mrruns)
   }
 }
 
-plotMeanInputBytesPerSecByNode<-function(mrruns, minmax=TRUE)
+plotMeanInputBytesPerSecByNode<-function(mrtest, minmax=TRUE)
 {
   result<-list()
-  for( i in 1:length(mrruns))
+  for( i in 1:length(mrtest))
   {
-    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
-    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
     for( m in 1:length(mapindices))
     {
-      node<-mrruns[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
-      bytespersec<-1000*mrruns[[i]]$counters$FileInputFormatCounter.BYTES_READ[mapindices[m]]/(mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]]*1024*1024)
+      node<-mrtest[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
+      bytespersec<-1000*mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ[mapindices[m]]/(mrtest[[i]]$job$attempts$elapsedTime[mapindices[m]]*1024*1024)
       if ( is.null(result[[node]]))
         result[[node]]<-bytespersec
       else
@@ -137,17 +135,17 @@ plotMeanInputBytesPerSecByNode<-function(mrruns, minmax=TRUE)
   res
 }
 
-plotMeanInputRecordsPerSecByNode<-function(mrruns, minmax=TRUE)
+plotMeanInputRecordsPerSecByNode<-function(mrtest, minmax=TRUE)
 {
   result<-list()
-  for( i in 1:length(mrruns))
+  for( i in 1:length(mrtest))
   {
-    attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
-    mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]=="MAP")
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
     for( m in 1:length(mapindices))
     {
-      node<-mrruns[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
-      recordspersec<-1000*mrruns[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS[mapindices[m]]/(mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]])
+      node<-mrtest[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
+      recordspersec<-1000*mrtest[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS[mapindices[m]]/(mrtest[[i]]$job$attempts$elapsedTime[mapindices[m]])
       if ( is.null(result[[node]]))
         result[[node]]<-recordspersec
       else
@@ -174,20 +172,20 @@ plotMeanInputRecordsPerSecByNode<-function(mrruns, minmax=TRUE)
   res
 }
 
-plotMeanElapsedMapTimesByNode<-function(mrruns, taskType="MAP", minmax=TRUE)
+plotMeanElapsedMapTimesByNode<-function(mrtest, taskType="MAP", minmax=TRUE)
 {
 	result<-list()
-	for( i in 1:length(mrruns))
+	for( i in 1:length(mrtest))
 	{
-		attemptindices<-match(mrruns[[i]]$job$tasks$successfulAttempt,mrruns[[i]]$job$attempts$id)
-		mapindices<-which(mrruns[[i]]$job$attempts$type[attemptindices]==taskType)
+		attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+		mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]==taskType)
 		for( m in 1:length(mapindices))
 		{
-			node<-mrruns[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
+			node<-mrtest[[i]]$job$attempts$nodeHttpAddress[mapindices[m]]
 			if ( is.null(result[[node]]))
-				result[[node]]<-mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]]
+				result[[node]]<-mrtest[[i]]$job$attempts$elapsedTime[mapindices[m]]
 			else
-				result[[node]]<-c(result[[node]],mrruns[[i]]$job$attempts$elapsedTime[mapindices[m]])
+				result[[node]]<-c(result[[node]],mrtest[[i]]$job$attempts$elapsedTime[mapindices[m]])
 		}
 	}
 	means<-vector()
