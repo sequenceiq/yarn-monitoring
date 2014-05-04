@@ -66,6 +66,8 @@ plotInputBytesRead<-function(mrtest)
 	res
 }
 
+
+
 plotElapsedMapTimesStat<-function(mrtest, add=FALSE)
 {
 	means<-vector()
@@ -130,7 +132,7 @@ plotMeanInputRecordsProcessedPerSecondByRun<-function(mrtest)
     mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
     res<-c(res, mean(1000*mrtest[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS/mrtest[[i]]$job$attempts[mapindices]$elapsedTime))
   }
-  barplot(res, xlab="run",ylab="records")
+  barplot(res, names.arg=1:length(mrtest), xlab="run",ylab="records")
   
 }
 
