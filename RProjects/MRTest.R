@@ -145,7 +145,7 @@ plotMeanBytesProcessedPerSecondByRun<-function(mrtest)
     mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
     res<-c(res, mean((1000/(1024*1024))*mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrtest[[i]]$job$attempts[mapindices]$elapsedTime))
   }
-  barplot(res, xlab="run",ylab="mbytes")
+  barplot(res, names.arg=1:length(mrtest), xlab="run",ylab="mbytes")
   
 }
 
