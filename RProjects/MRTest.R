@@ -25,6 +25,18 @@ mrrun<-function(name, jobURL=NULL, dir=".", save=FALSE)
 	run
 }
 
+createRunsAndTest<-function(runNumbers, jobIds, historyServer, historyServerId, dir="runs", save=TRUE)
+{
+  for( i in 1:length(runNumbers))
+  {
+    #print(sprintf("run%d",runNumbers[i]))
+    #print(sprintf("%s/%s_%04d",historyServer,historyServerId,jobIds[i]))
+    run<-mrrun(sprintf("run%d",runNumbers[i]),sprintf("%s/%s_%04d",historyServer,historyServerId,jobIds[i]),dir=dir,save=save)
+  }
+  test<-mrtest(paste("run",runNumbers,sep=""),dir=dir)
+  test
+}
+
 mrtest<-function(runNames=NULL, dir=".")
 {
 	result<-list()
@@ -54,7 +66,7 @@ plotInputBytesRead<-function(mrtest)
 	res
 }
 
-plotElapsedMapTimesStat<-function(mrtest)
+plotElapsedMapTimesStat<-function(mrtest, add=FALSE)
 {
 	means<-vector()
 	mins<-vector()
@@ -68,11 +80,12 @@ plotElapsedMapTimesStat<-function(mrtest)
 		sds<-c(sds,sd(mrtest[[i]]$job$tasks$elapsedTime))
 	}	
 #	par(fg="black")
-	errbar(1:length(mrtest),means, maxs, mins, errbar.col="red", ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")		
+	errbar(1:length(mrtest),means, maxs, mins, errbar.col="red", ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run", add=add)		
  # par(fg="red")
 	errbar(1:length(mrtest),means, means+sds, means-sds , lwd=2, add=TRUE, ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run")
 	#par(fg="black")
 }
+
 plotElapsedMapTimes<-function(mrtest)
 {
 	for( i in 1:length(mrtest))
@@ -96,6 +109,42 @@ plotInputRecordsProcessedPerSec<-function(mrtest)
     else
       lines(bytespersec, col=i)
   }
+}
+
+plotElapsedTimesByRun<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    res<-c(res,mrtest[[i]]$job$job$finishTime-mrtest[[i]]$job$job$startTime)
+  }
+  barplot(res, names.arg=1:length(mrtest),xlab="run",ylab="ms")  
+}
+
+plotMeanInputRecordsProcessedPerSecondByRun<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    res<-c(res, mean(1000*mrtest[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS/mrtest[[i]]$job$attempts[mapindices]$elapsedTime))
+  }
+  barplot(res, xlab="run",ylab="records")
+  
+}
+
+plotMeanBytesProcessedPerSecondByRun<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    res<-c(res, mean((1000/(1024*1024))*mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrtest[[i]]$job$attempts[mapindices]$elapsedTime))
+  }
+  barplot(res, xlab="run",ylab="mbytes")
+  
 }
 
 plotMeanInputBytesPerSecByNode<-function(mrtest, minmax=TRUE)
@@ -205,4 +254,24 @@ plotMeanElapsedMapTimesByNode<-function(mrtest, taskType="MAP", minmax=TRUE)
   else
     errbar(names(res),means, means+sds, means-sds, ylab="ms", xlab="nodes", main="Mean +- stdev elapsed times per node")
   res
+}
+
+plotJobElapsedTimes<-function(mrtest)
+{
+  res<-vector()
+  for(i in 1:length(mrtest))
+  {
+    res<-c(res,mrtest[[i]]$job$job$finishTime-mrtest[[i]]$job$job$startTime)
+  }
+  barplot(res, names.arg=1:length(mrtest), width=rep(1,length(mrtest)), space=0)
+}
+
+plotJobStartTimes<-function(mrtest)
+{
+  res<-vector()
+  for(i in 1:length(mrtest))
+  {
+    res<-c(res,mrtest[[i]]$job$job$startTime-mrtest[[1]]$job$job$startTime)
+  }
+  barplot(res, names.arg=1:length(mrtest), width=rep(1,length(mrtest)), space=0)
 }

@@ -231,13 +231,16 @@ createTimeBoxData <- function(job, relative=FALSE)
 	minstart<-0
   for(i in 1:length(mapindices))
   {
-  	node<-job$attempts$nodeHttpAddress[mapindices[i]]  
-	result<-addBox.timeboxes(result, node, c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0,0))
+  	node<-job$attempts$nodeHttpAddress[mapindices[i]]
+	  result<-addBox.timeboxes(result, node, c(job$attempts$startTime[mapindices[i]]-minstart,job$attempts$finishTime[mapindices[i]]-minstart,0,0,0))
   }
-  for(i in 1:length(reduceindices))
+  if ( length(reduceindices)>0 )
   {
-  	node<-job$attempts$nodeHttpAddress[reduceindices[i]]  
-	result<-addBox.timeboxes(result, node, c(0, job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart))
+    for(i in 1:length(reduceindices))
+    {
+  	  node<-job$attempts$nodeHttpAddress[reduceindices[i]]  
+  	  result<-addBox.timeboxes(result, node, c(0, job$attempts$startTime[reduceindices[i]]-minstart,job$attempts$shuffleFinishTime[i]-minstart,job$attempts$mergeFinishTime[i]-minstart,job$attempts$finishTime[reduceindices[i]]-minstart))
+    }
   }
   result
 }

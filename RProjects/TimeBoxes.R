@@ -17,9 +17,10 @@ addBox.timeboxes<-function(data, line, box)
 
 plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortGroups=TRUE, colors=c("green", "darkorange", "magenta", "blue"), ylim=c(0,lineGroupNum+0.5), lineNameConv=identity)
 {
+    cols=ncol(data[[1]])
   	for(i in 1:length(data))
   	{
-		data[[i]]<-data[[i]][sort.list(data[[i]][,1]), ]
+		data[[i]]<-matrix(data[[i]][sort.list(data[[i]][,1]), ], ncol=cols)
   	}
   	if (sortGroups)
  		data<-data[order(names(data))]
@@ -35,11 +36,12 @@ plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortG
 			maxx <- ma		
 	}
 	plot(1, type="n", xlim=c(minx-0.5,maxx+0.5), ylim=ylim,  xlab="time (ms)",ylab="nodes")
-	axis(4,at=(1:length(data))-0.5,labels=nodeconv(names(data)))
+	axis(4,at=(1:length(data))-0.5,labels=lineNameConv(names(data)))
 	for(i in 1:lineGroupNum)
 	{
 		lines(c(minx-0.5,maxx+0.5),c(i,i))	
 	}
+
 	for(n in 1:length(data))
 	{ 
 		for(r in 1:nrow(data[[n]]))
