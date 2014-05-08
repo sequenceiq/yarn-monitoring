@@ -277,3 +277,25 @@ plotJobStartTimes<-function(mrtest)
   }
   barplot(res, names.arg=1:length(mrtest), width=rep(1,length(mrtest)), space=0)
 }
+
+getJobElapsedTimesMean<-function(mrtest)
+{
+  res<-vector()
+  for(i in 1:length(mrtest))
+  {
+    res<-c(res,mrtest[[i]]$job$job$finishTime-mrtest[[i]]$job$job$startTime)
+  }
+  mean(res)
+}
+
+getTaskElapsedTimesMean<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    res<-c(res,mrtest[[i]]$job$tasks$elapsedTime)
+  }
+  mean(res)
+}
