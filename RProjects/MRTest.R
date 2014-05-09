@@ -299,3 +299,44 @@ getTaskElapsedTimesMean<-function(mrtest)
   }
   mean(res)
 }
+
+getTasksBytesProcessedMean<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    res<-c(res, (1000/(1024*1024))*mrtest[[i]]$counters$FileInputFormatCounter.BYTES_READ/mrtest[[i]]$job$attempts[mapindices]$elapsedTime)
+  }
+  mean(res)
+}
+getTasksInputRecordsProcessedMean<-function(mrtest)
+{
+  res<-vector()
+  for( i in 1:length(mrtest))
+  {
+    attemptindices<-match(mrtest[[i]]$job$tasks$successfulAttempt,mrtest[[i]]$job$attempts$id)
+    mapindices<-which(mrtest[[i]]$job$attempts$type[attemptindices]=="MAP")
+    res<-c(res, 1000*mrtest[[i]]$counters$TaskCounter.MAP_INPUT_RECORDS/mrtest[[i]]$job$attempts[mapindices]$elapsedTime)
+  }
+  mean(res)
+}
+
+plotJobElapsedTimesMeansForTests<-function(names, ...)
+{
+  resTasks<-vector()
+  resJobs<-vector()
+  tests<-list(...)
+  print(names(tests[[1]]))
+  for( t in 1:length(tests))
+  {
+    resTasks<-c(resTasks,getTaskElapsedTimesMean(tests[[t]]))
+    resJobs<-c(resJobs,getJobElapsedTimesMean(tests[[t]]))
+  }
+  plot(resJobs,type="b", ylab="ms",xlab="test", ylim=c(min(resJobs,resTasks),max(resJobs,resTasks)), axes=FALSE)
+  lines(resTasks,col="red")
+  points(resTasks,col="red")
+  axis(side=1,at=c(1,2,3,4),labels=names)
+  axis(side=2)
+}
