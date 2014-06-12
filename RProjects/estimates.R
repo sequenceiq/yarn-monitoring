@@ -10,3 +10,14 @@ inputSizes<-function(webhdfs, path)
   }
   result
 }
+estimateElapsedTime<-function(webhdfs, path, run, freeSlots, blockSize)
+{
+  sizes<-inputSizes(webhdfs, path)
+  avgTime<-mean(getElapsedTimesOfTasks.mrrun(run))
+  mapperNum=0
+  for(s in 1:length(sizes))
+  {
+    mapperNum<-mapperNum+ceiling(sizes[[s]]/blockSize)
+  }
+  avgTime*(ceiling(mapperNum/freeSlots))
+}
