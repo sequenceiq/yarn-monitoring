@@ -1,7 +1,7 @@
 yarn-monitoring
 ===============
 
-Repisitory to monitor Hadoop YARN with R and generate metrics/charts. Complementary to Apache Ambari - monitors the MR jobs using YARN HistoryServer.
+Repisitory to monitor Hadoop YARN with R and generate metrics/charts. Complementary to Apache Ambari - monitors the MR jobs using YARN Timeline Server.
 All the metrics are collected through the Timeline Server (previously also called Generic Application History Server) [REST API](http://hadoop.apache.org/docs/r2.4.0/hadoop-yarn/hadoop-yarn-site/TimelineServer.html).
 
 This serves has two responsibilities:
