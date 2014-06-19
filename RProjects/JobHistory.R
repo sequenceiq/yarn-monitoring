@@ -54,18 +54,18 @@ getTaskCounters <- function(jobId, historyServer)
 plotMapTasksTimes <- function(job)
 {
 	indices<-which(job$tasks$type=="MAP")
-	plotTasksTimes(job, indices)
+	plotTasksTimesData(job, indices)
 }
 
 # This function plots lines for each red+ucer horizontally. The horizontal axis is the time in ms
 plotReduceTasksTimes <- function(job)
 {
 	indices<-which(job$tasks$type=="REDUCE")
-	plotTasksTimes(job, indices)
+	plotTasksTimesData(job, indices)
 }
 
 # This function plots lines for each mapper and reducer horizontally. The horizontal axis is the time in ms
-plotTasksTimesdata <- function(job, indices=1:length(job$tasks$startTime))
+plotTasksTimesData <- function(job, indices=1:length(job$tasks$startTime))
 {
 	times<-cbind(job$tasks$startTime[indices],job$tasks$finishTime[indices])
 	sortedtimes<-times[order(times[,1]),]
@@ -82,14 +82,14 @@ plotTasksTimesdata <- function(job, indices=1:length(job$tasks$startTime))
 # This function plots the number of active mappers at every time point when this number changes
 plotActiveMappersNumdata <- function(job, replot=FALSE, minTime=NULL)
 {
-	nums <- getActiveTasksNum(job, which(job$tasks$type=="MAP", minTime))
+	nums <- getActiveTasksNumdata(job, which(job$tasks$type=="MAP", minTime))
 	plotActiveTasksNum(nums, replot=replot)
 }
 
 # This function plots the number of active reducers at every time point when this number changes
 plotActiveReducersNumdata <- function(job, replot=FALSE, minTime=NULL)
 {
-	nums <- getActiveTasksNum(job, which(job$tasks$type=="REDUCE"), minTime)
+	nums <- getActiveTasksNumdata(job, which(job$tasks$type=="REDUCE"), minTime)
 	plotActiveTasksNum(nums, replot=replot)
 
 }

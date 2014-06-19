@@ -104,13 +104,13 @@ getMapElapsedTimesByNodesAndTasks.mrrun<-function(run)
   result<-list()
   attemptindices<-match(run$job$tasks$successfulAttempt,run$job$attempts$id)
   mapindices<-which(run$job$attempts$type[attemptindices]=="MAP")
-  print(mapindices)
+  #print(mapindices)
   for( m in 1:length(mapindices))
   {
     node<-run$job$attempts$nodeHttpAddress[mapindices[m]]
     elapsed<-run$job$attempts$elapsedTime[mapindices[m]]
-    print(node)
-    print(elapsed)
+    #print(node)
+    #print(elapsed)
     if ( is.null(result[[node]]))
       result[[node]]<-elapsed
     else

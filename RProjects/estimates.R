@@ -13,11 +13,24 @@ inputSizes<-function(webhdfs, path)
 estimateElapsedTime<-function(webhdfs, path, run, freeSlots, blockSize)
 {
   sizes<-inputSizes(webhdfs, path)
-  avgTime<-mean(getElapsedTimesOfTasks.mrrun(run))
+  blocks<-vector()
+  time<-max(getElapsedTimesOfMapTasks.mrrun(run))
   mapperNum=0
   for(s in 1:length(sizes))
   {
-    mapperNum<-mapperNum+ceiling(sizes[[s]]/blockSize)
+    newblocks<-c(rep(blockSize,floor(sizes[[s]]/blockSize)),sizes[[s]]-floor(sizes[[s]]/blockSize)*blockSize)
+    blocks<-c(blocks,newblocks)
   }
-  avgTime*(ceiling(mapperNum/freeSlots))
+  calcRunningTimes(sort(time*blocks/blockSize,decreasing=TRUE), freeSlots)
+}
+
+calcRunningTimes<-function(times, slots)
+{
+  nodes<-rep(0,slots)
+  for(t in 1:length(times))
+  {
+    i<-which.min(nodes)
+    nodes[i]<-nodes[i]+times[t]
+  }
+  nodes
 }
