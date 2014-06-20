@@ -82,7 +82,7 @@ plotTasksTimesData <- function(job, indices=1:length(job$tasks$startTime))
 # This function plots the number of active mappers at every time point when this number changes
 plotActiveMappersNumdata <- function(job, replot=FALSE, minTime=NULL)
 {
-	nums <- getActiveTasksNumdata(job, which(job$tasks$type=="MAP", minTime))
+	nums <- getActiveTasksNumdata(job, which(job$tasks$type=="MAP"), minTime)
 	plotActiveTasksNum(nums, replot=replot)
 }
 
