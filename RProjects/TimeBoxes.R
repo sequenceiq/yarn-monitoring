@@ -50,7 +50,8 @@ plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortG
 			for(c in 1:(ncol(data[[n]])-1))
 			{
 				col<-colors[c]				
-				if ( data[[n]][r,c]!=0 && data[[n]][r,c+1]!=0)
+				#if ( data[[n]][r,c]!=0 && data[[n]][r,c+1]!=0)
+				if ( data[[n]][r,c+1]!=0)
 					rect(data[[n]][r,c],((n-1)*linesPerGroup+((r-1)%%linesPerGroup))/linesPerGroup,data[[n]][r,c+1],((n-1)*linesPerGroup+((r-1)%%linesPerGroup+1))/linesPerGroup, col=col)
 			}
 		}
