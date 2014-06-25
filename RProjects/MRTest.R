@@ -52,6 +52,16 @@ getElapsedTimesOfTasks.mrtest<-function(test)
   res
 }
 
+getMeanElapsedTimesOfRuns.mrtest<-function(test)
+{
+  res<-vector()
+  for( t in 1:length(test))
+  {
+    res<-c(res,mean(getElapsedTimesOfTasks.mrrun(test[[t]])))
+  }
+  res
+}
+
 getRecordsReadByRuns.mrtest<-function(test)
 {
   res<-vector()
