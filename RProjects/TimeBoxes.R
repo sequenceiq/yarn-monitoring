@@ -1,4 +1,4 @@
-
+# constructor of timeboxes
 timeboxes<-function()
 {
 	timebox<-list()
@@ -6,6 +6,7 @@ timeboxes<-function()
 	timebox
 }
 
+# this method adds boxes to a line in timeboxes
 addBox.timeboxes<-function(data, line, box)
 {
 	if (is.null(data[[line]]))
@@ -15,13 +16,15 @@ addBox.timeboxes<-function(data, line, box)
 	data
 }
 
-
+#it shows the time boxes given the timebox data. The lineGroupNum is the number of groups,
+# the linesPerGroup is the number of timeboxes in a group. The lineNameConv parameter can be used to 
+# transform the names of groups (example had431->431)
 plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortGroups=TRUE, colors=c("green", "darkorange", "magenta", "blue"), ylim=c(0,lineGroupNum+0.5), lineNameConv=identity)
 {
     cols=ncol(data[[1]])
   	for(i in 1:length(data))
   	{
-		data[[i]]<-matrix(data[[i]][sort.list(data[[i]][,1]), ], ncol=cols)
+		  data[[i]]<-matrix(data[[i]][sort.list(data[[i]][,1]), ], ncol=cols)
   	}
   	if (sortGroups)
  		data<-data[order(names(data))]
@@ -29,10 +32,10 @@ plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortG
 	maxx=0
 	for(n in 1:length(data))
 	{
-		mi<-min(data[[n]][data[[n]]>0])
+		mi<-min(data[[n]][data[[n]]>=0])
 		if (minx > mi )
 			minx <- mi
-		ma<-max(data[[n]][data[[n]]>0])
+		ma<-max(data[[n]][data[[n]]>=0])
 		if (maxx < ma )
 			maxx <- ma		
 	}
@@ -50,18 +53,10 @@ plot.timeboxes<-function(data, lineGroupNum=length(data), linesPerGroup=1, sortG
 			for(c in 1:(ncol(data[[n]])-1))
 			{
 				col<-colors[c]				
-				#if ( data[[n]][r,c]!=0 && data[[n]][r,c+1]!=0)
-				if ( data[[n]][r,c+1]!=0)
+				if ( data[[n]][r,c]!=-1 && data[[n]][r,c+1]!=-1)
+				#if ( data[[n]][r,c+1]!=-1)
 					rect(data[[n]][r,c],((n-1)*linesPerGroup+((r-1)%%linesPerGroup))/linesPerGroup,data[[n]][r,c+1],((n-1)*linesPerGroup+((r-1)%%linesPerGroup+1))/linesPerGroup, col=col)
 			}
 		}
 	}
 }
-
-#data<-timeboxes()
-#data[["node01"]]<-rbind(c(10,20,0,0,0),c(10,34,0,0,0),c(0,30,44,57,65),c(0,30,55,75,82))
-
-#data[[1]]<-rbind(c(10,20,0,0),c(10,34,0,0),c(30,44,57,65),c(30,55,75,82),c(40,70,0,0),c(42,72,0,0))
-#data[[2]]<-rbind(c(12,22,0,0),c(15,23,0,0),c(40,55,65,74),c(51,64,77,85))
-#data[[3]]<-rbind(c(18,32,0,0))
-#plot(data)
