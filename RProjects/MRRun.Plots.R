@@ -97,6 +97,8 @@ plotActiveTasksNum <- function(nums, replot=FALSE, col="black", xlim=NULL, ylim=
   else
     plot(nums, type="s", xlab="time (ms)",ylab="number of tasks", col=col, xlim=xlim, ylim=ylim)
 }
+
+########################### HELPER FUNCTIONS ####################
 # This function return the number of active tasks (mappers or reducers depend on indices) at every time point when this number changes
 getActiveTasksNumData <- function(job, indices=1:length(job$tasks$startTime), minTime=NULL)
 {

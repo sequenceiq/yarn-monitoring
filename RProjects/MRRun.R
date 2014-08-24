@@ -2,6 +2,7 @@ source("RProjects/JobHistory.R")
 source("RProjects/TimeBoxes.R")
 library("rjson")
 
+# It constructs an mrrun for the given name and jobURl, the result can be saved in a directory
 mrrun<-function(name, jobURL=NULL, dir=".", save=FALSE)
 {
   if ( is.null(jobURL) )
@@ -25,17 +26,19 @@ mrrun<-function(name, jobURL=NULL, dir=".", save=FALSE)
   run
 }
 
+# it returns the elapsed time of the mrrun
 getElapsedTime.mrrun<-function(run)
 {
   run$job$job$finishTime-run$job$job$startTime
 }
 
+#it returns the elapsed times of the mrrun
 getElapsedTimesOfTasks.mrrun<-function(run)
 {
   run$job$tasks$elapsedTime
 }
 
-
+# it returns the elapsed times of map tasks for the run
 getElapsedTimesOfMapTasks.mrrun<-function(run)
 {
   attemptindices<-match(run$job$tasks$successfulAttempt,run$job$attempts$id)
@@ -43,6 +46,7 @@ getElapsedTimesOfMapTasks.mrrun<-function(run)
   run$job$attempts[mapindices]$elapsedTime
 }
 
+# it returns the elapsed times of reduce tasks for the given run
 getElapsedTimesOfReduceTasks.mrrun<-function(run)
 {
   attemptindices<-match(run$job$tasks$successfulAttempt,run$job$attempts$id)
@@ -50,22 +54,25 @@ getElapsedTimesOfReduceTasks.mrrun<-function(run)
   run$job$attempts[mapindices]$elapsedTime
 }
 
+# it return the number of input records of the map tasks for the given run
 getInputRecordsOfMapTasks.mrrun<-function(run)
 {
   run$counters$TaskCounter.MAP_INPUT_RECORDS
 }
 
-
+# it return the number of output records of the map tasks for the given run
 getOutputRecordsOfMapTasks.mrrun<-function(run)
 {
   run$counters$TaskCounter.MAP_OUTPUT_RECORDS
 }
 
+# it return the number of input bytes of the map tasks for the given run
 getInputBytesOfMapTasks.mrrun<-function(run)
 {
   run$counters$FileInputFormatCounter.BYTES_READ
 }
 
+# it return the number of input bytes of the map tasks by nodes for the given run
 getInputBytesReadByNodesAndTasks.mrrun<-function(run)
 {
   result<-list()
@@ -83,6 +90,7 @@ getInputBytesReadByNodesAndTasks.mrrun<-function(run)
   result
 }
 
+# it return the number of input bytes of the map tasks by nodes for the given run
 getInputRecordsReadByNodesAndTasks.mrrun<-function(run)
 {
   result<-list()
@@ -100,6 +108,7 @@ getInputRecordsReadByNodesAndTasks.mrrun<-function(run)
   result
 }
 
+# it returns the elapsed times of tasks by nodes for the given run
 getMapElapsedTimesByNodesAndTasks.mrrun<-function(run)
 {
   result<-list()

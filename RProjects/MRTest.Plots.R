@@ -1,6 +1,7 @@
 source("RProjects/MRTest.R")
 source("RProjects/MRRun.R")
 
+# it plots the means of the input bytes read by map tasks of runs in the test
 plotInputBytesRead.mrtest<-function(mrtest)
 {
   res<-vector()
@@ -11,6 +12,7 @@ plotInputBytesRead.mrtest<-function(mrtest)
   plot(res,type="l", xlab="run",ylab="mbytes")
 }
 
+#it plots the error bars of the mean elapsed times of runs in the test
 plotElapsedMapTimesStat.mrtest<-function(mrtest, add=FALSE)
 {
   means<-vector()
@@ -31,7 +33,7 @@ plotElapsedMapTimesStat.mrtest<-function(mrtest, add=FALSE)
   #par(fg="black")
 }
 
-
+# it plots the input records processed by all the runs in the test
 plotInputRecordsProcessedPerSec.mrtest<-function(mrtest)
 {
   for( i in 1:length(mrtest))
@@ -44,6 +46,7 @@ plotInputRecordsProcessedPerSec.mrtest<-function(mrtest)
   }
 }
 
+# it plots the elapsed times by runs in the test
 plotElapsedTimesByRun.mrtest<-function(mrtest)
 {
   res<-vector()
@@ -54,6 +57,7 @@ plotElapsedTimesByRun.mrtest<-function(mrtest)
   barplot(res, names.arg=1:length(mrtest),xlab="run",ylab="ms")  
 }
 
+#it plots the input records processed per second by runs in the test
 plotMeanInputRecordsProcessedPerSecondByRun.mrtest<-function(mrtest)
 {
   res<-vector()
@@ -65,6 +69,7 @@ plotMeanInputRecordsProcessedPerSecondByRun.mrtest<-function(mrtest)
   
 }
 
+# it plots the mean bytes processed per second by runs
 plotMeanBytesProcessedPerSecondByRun.mrtest<-function(mrtest)
 {
   res<-vector()
@@ -73,7 +78,6 @@ plotMeanBytesProcessedPerSecondByRun.mrtest<-function(mrtest)
     res<-c(res, mean((1000/(1024*1024))*getInputBytesOfMapTasks.mrrun(mrtest[[i]])/getElapsedTimesOfMapTasks.mrrun(mrtest[[i]])))
   }
   barplot(res, names.arg=1:length(mrtest), xlab="run",ylab="mbytes")
-  
 }
 
 plotMeanInputBytesPerSecByNode.mrtest<-function(mrtest, minmax=TRUE)
