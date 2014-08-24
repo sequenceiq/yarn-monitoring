@@ -1,8 +1,7 @@
-source("RProjects/MRRun.R")
-source("RProjects/MRRun.R")
 source("RProjects/MRTest.R")
+source("RProjects/MRRun.R")
 
-plotInputBytesRead<-function(mrtest)
+plotInputBytesRead.mrtest<-function(mrtest)
 {
   res<-vector()
   for(i in 1:length(mrtest))
@@ -12,7 +11,7 @@ plotInputBytesRead<-function(mrtest)
   plot(res,type="l", xlab="run",ylab="mbytes")
 }
 
-plotElapsedMapTimesStat<-function(mrtest, add=FALSE)
+plotElapsedMapTimesStat.mrtest<-function(mrtest, add=FALSE)
 {
   means<-vector()
   mins<-vector()
@@ -24,7 +23,7 @@ plotElapsedMapTimesStat<-function(mrtest, add=FALSE)
     mins<-c(mins,min(getElapsedTimesOfTasks.mrrun(mrtest[[i]])))
     maxs<-c(maxs,max(getElapsedTimesOfTasks.mrrun(mrtest[[i]])))
     sds<-c(sds,sd(getElapsedTimesOfTasks.mrrun(mrtest[[i]])))
-  }	
+  }  
   #	par(fg="black")
   errbar(1:length(mrtest),means, maxs, mins, errbar.col="red", ylab="ms", xlab="runs", main="Mean, min, max elapsed times per run", add=add)		
   # par(fg="red")
@@ -33,7 +32,7 @@ plotElapsedMapTimesStat<-function(mrtest, add=FALSE)
 }
 
 
-plotInputRecordsProcessedPerSec<-function(mrtest)
+plotInputRecordsProcessedPerSec.mrtest<-function(mrtest)
 {
   for( i in 1:length(mrtest))
   {
@@ -45,7 +44,7 @@ plotInputRecordsProcessedPerSec<-function(mrtest)
   }
 }
 
-plotElapsedTimesByRun<-function(mrtest)
+plotElapsedTimesByRun.mrtest<-function(mrtest)
 {
   res<-vector()
   for( i in 1:length(mrtest))
@@ -55,7 +54,7 @@ plotElapsedTimesByRun<-function(mrtest)
   barplot(res, names.arg=1:length(mrtest),xlab="run",ylab="ms")  
 }
 
-plotMeanInputRecordsProcessedPerSecondByRun<-function(mrtest)
+plotMeanInputRecordsProcessedPerSecondByRun.mrtest<-function(mrtest)
 {
   res<-vector()
   for( i in 1:length(mrtest))
@@ -66,7 +65,7 @@ plotMeanInputRecordsProcessedPerSecondByRun<-function(mrtest)
   
 }
 
-plotMeanBytesProcessedPerSecondByRun<-function(mrtest)
+plotMeanBytesProcessedPerSecondByRun.mrtest<-function(mrtest)
 {
   res<-vector()
   for( i in 1:length(mrtest))
@@ -77,7 +76,7 @@ plotMeanBytesProcessedPerSecondByRun<-function(mrtest)
   
 }
 
-plotMeanInputBytesPerSecByNode<-function(mrtest, minmax=TRUE)
+plotMeanInputBytesPerSecByNode.mrtest<-function(mrtest, minmax=TRUE)
 {
   result<-list()
   for( i in 1:length(mrtest))
@@ -105,7 +104,7 @@ plotMeanInputBytesPerSecByNode<-function(mrtest, minmax=TRUE)
     errbar(names(res),means, means+sds, means-sds, ylab="mbytes", xlab="nodes", main="Mean +- stdev elapsed times per node")
 }
 
-plotMeanInputRecordsPerSecByNode<-function(mrtest, minmax=TRUE)
+plotMeanInputRecordsPerSecByNode.mrtest<-function(mrtest, minmax=TRUE)
 {
   result<-list()
   for( i in 1:length(mrtest))
@@ -146,7 +145,7 @@ merge_items<-function(items1, items2)
   items2
 }
 
-plotMeanElapsedMapTimesByNode<-function(mrtest, taskType="MAP", minmax=TRUE)
+plotMeanElapsedMapTimesByNode.mrtest<-function(mrtest, taskType="MAP", minmax=TRUE)
 {
   result<-list()
   for( i in 1:length(mrtest))
@@ -172,7 +171,7 @@ plotMeanElapsedMapTimesByNode<-function(mrtest, taskType="MAP", minmax=TRUE)
     errbar(names(res),means, means+sds, means-sds, ylab="ms", xlab="nodes", main="Mean +- stdev elapsed times per node")
 }
 
-plotJobElapsedTimes<-function(mrtest)
+plotJobElapsedTimes.mrtest<-function(mrtest)
 {
   res<-vector()
   for(i in 1:length(mrtest))
@@ -182,7 +181,7 @@ plotJobElapsedTimes<-function(mrtest)
   barplot(res, names.arg=1:length(mrtest), width=rep(1,length(mrtest)), space=0)
 }
 
-plotJobStartTimes<-function(mrtest)
+plotJobStartTimes.mrtest<-function(mrtest)
 {
   res<-vector()
   for(i in 1:length(mrtest))
@@ -190,39 +189,4 @@ plotJobStartTimes<-function(mrtest)
     res<-c(res,mrtest[[i]]$job$job$startTime-mrtest[[1]]$job$job$startTime)
   }
   barplot(res, names.arg=1:length(mrtest), width=rep(1,length(mrtest)), space=0)
-}
-
-plotJobElapsedTimesMeansForTests<-function(names, ...)
-{
-  resTasks<-vector()
-  resJobs<-vector()
-  tests<-list(...)
-  print(names(tests[[1]]))
-  for( t in 1:length(tests))
-  {
-    resJobs<-c(resJobs,mean(getElapsedTimesOfRuns.mrtest(tests[[t]])))
-    resTasks<-c(resTasks,mean(getElapsedTimesOfTasks.mrtest(tests[[t]])))
-  }
-  plot(resJobs,type="b", ylab="ms",xlab="test", ylim=c(min(resJobs,resTasks),max(resJobs,resTasks)), axes=FALSE)
-  lines(resTasks,col="red")
-  points(resTasks,col="red")
-  axis(side=1,at=c(1,2,3,4),labels=names)
-  axis(side=2)
-}
-
-plotJobElapsedTimesMaxsForTests<-function(names, ...)
-{
-  resTasks<-vector()
-  resJobs<-vector()
-  tests<-list(...)
-  for( t in 1:length(tests))
-  {
-    resTasks<-c(resTasks,max(getElapsedTimesOfTasks.mrtest(tests[[t]])))
-    resJobs<-c(resJobs,max(getElapsedTimesOfRuns.mrtest(tests[[t]])))
-  }
-  plot(resJobs,type="b", ylab="ms",xlab="test", ylim=c(min(resJobs,resTasks),max(resJobs,resTasks)), axes=FALSE)
-  lines(resTasks,col="red")
-  points(resTasks,col="red")
-  axis(side=1,at=c(1,2,3,4),labels=names)
-  axis(side=2)
 }

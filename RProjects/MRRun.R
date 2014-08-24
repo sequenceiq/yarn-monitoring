@@ -1,4 +1,5 @@
 source("RProjects/JobHistory.R")
+source("RProjects/TimeBoxes.R")
 library("rjson")
 
 mrrun<-function(name, jobURL=NULL, dir=".", save=FALSE)
@@ -115,6 +116,32 @@ getMapElapsedTimesByNodesAndTasks.mrrun<-function(run)
       result[[node]]<-elapsed
     else
       result[[node]]<-c(result[[node]],elapsed)
+  }
+  result
+}
+#it creates time box data that can be shown using the TimeBoxes.R functions
+createTimeBoxData.mrrun <- function(mrrun, relative=FALSE)
+{
+  result<-timeboxes()
+  attemptindices<-match(mrrun$job$tasks$successfulAttempt,mrrun$job$attempts$id)
+  mapindices<-which(mrrun$job$attempts$type[attemptindices]=="MAP")
+  reduceindices<-which(mrrun$job$attempts$type[attemptindices]=="REDUCE")
+  if (relative)
+    minstart<-min(mrrun$job$attempts$startTime)
+  else
+    minstart<-0
+  for(i in 1:length(mapindices))
+  {
+    node<-mrrun$job$attempts$nodeHttpAddress[mapindices[i]]
+    result<-addBox.timeboxes(result, node, c(mrrun$job$attempts$startTime[mapindices[i]]-minstart,mrrun$job$attempts$finishTime[mapindices[i]]-minstart,-1,-1,-1))
+  }
+  if ( length(reduceindices)>0 )
+  {
+    for(i in 1:length(reduceindices))
+    {
+      node<-mrrun$job$attempts$nodeHttpAddress[reduceindices[i]]  
+      result<-addBox.timeboxes(result, node, c(-1, mrrun$job$attempts$startTime[reduceindices[i]]-minstart,mrrun$job$attempts$shuffleFinishTime[i]-minstart,mrrun$job$attempts$mergeFinishTime[i]-minstart,mrrun$job$attempts$finishTime[reduceindices[i]]-minstart))
+    }
   }
   result
 }
