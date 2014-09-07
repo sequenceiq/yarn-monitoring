@@ -36,11 +36,22 @@ plotElapsedMapTimesStat.mrtest<-function(mrtest, add=FALSE)
 # it plots the input records processed by all the runs in the test
 plotInputRecordsProcessedPerSec.mrtest<-function(mrtest)
 {
+  minx<-1
+  maxx<-0
+  miny<-.Machine$double.xmax
+  maxy<--.Machine$double.xmax
+  for( i in 1:length(mrtest))
+  {
+    bytespersec<-getInputBytesOfMapTasks.mrrun(mrtest[[i]])/getElapsedTimesOfMapTasks.mrrun(mrtest[[i]])
+    maxx<-max(maxx,length(bytespersec))
+    miny<-min(miny,bytespersec)
+    maxy<-max(maxy,bytespersec)
+  }
   for( i in 1:length(mrtest))
   {
     bytespersec<-getInputBytesOfMapTasks.mrrun(mrtest[[i]])/getElapsedTimesOfMapTasks.mrrun(mrtest[[i]])
     if (i==1)
-      plot(bytespersec, type="l")
+      plot(bytespersec, type="l", xlim=c(minx,maxx),ylim=c(miny, maxy))
     else
       lines(bytespersec, col=i)
   }
