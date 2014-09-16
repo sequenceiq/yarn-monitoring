@@ -14,14 +14,8 @@ readResStat<-function(root, type="DataNode", subtype="net")
   }
   resstat
 }
-readResStatsOfRun<-function( runname, root=NULL, save=FALSE, dir=".")
+readResStatsOfRun<-function( runname, root)
 {
-  if ( is.null(root) )
-  {
-    resstats<-fromJSON(readLines(paste(dir,"/resstats_",runname,".RData",sep="")))
-  }
-  else
-  {
     resstats<-list()
     class(resstats)<-"resstats"
     resstats$runname<-paste("resstats_",runname,sep="")
@@ -31,9 +25,6 @@ readResStatsOfRun<-function( runname, root=NULL, save=FALSE, dir=".")
     resstats$data$nodemanager_disk<-readResStat(root, "NodeManager","disk")
     resstats$data$yarnchild_net<-readResStat(root, "YarnChild","net")
     resstats$data$yarnchild_disk<-readResStat(root, "YarnChild","disk")
-    if ( save )
-      writeLines(toJSON(resstats), paste(dir,"/resstats_",runname,".RData",sep=""))
-  }
   resstats
 }
 
@@ -102,6 +93,9 @@ plot.resstats<-function(resstats, nodename, input=TRUE)
     if ( is.na(match(nodename,nodenames)))
       next
     leg<-c(leg,resstats$data[[i]]$name)
+    #print(resstats$data[[i]]$name)
+    #print(match(nodename,nodenames))
+    #print(resstats$data[[i]]$data[match(nodename,nodenames)][[1]])
     transformed<-transform.resstat(resstats$data[[i]]$data[match(nodename,nodenames)][[1]])
     ry<-cbind(ry,range(transformed[,pos]))
     rx<-cbind(rx,range(transformed[,1]))
