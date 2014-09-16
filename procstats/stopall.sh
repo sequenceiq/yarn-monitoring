@@ -1,0 +1,10 @@
+ssh node03 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node04 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node05 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node07 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node09 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node10 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node11 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node12 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node13 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh
+ssh node14 /index/admin/nodegraphs/client/core/procstats/stopjpsstats.sh

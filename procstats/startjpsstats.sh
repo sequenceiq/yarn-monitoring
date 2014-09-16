@@ -1,0 +1,10 @@
+ssh node03 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node04 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node05 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node07 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node09 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node10 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node11 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node12 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node13 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
+ssh node14 "cd /index/admin/nodegraphs/client/core/procstats;./getJpsStats.sh" &
